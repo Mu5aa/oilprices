@@ -4,7 +4,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 
 
 export default function TabTwoScreen() {
-  // Sample data for gas stations
+
   const gasStations = [
     { id: 1, name: 'Gas Station 1', address: 'Address 1', logo: require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png'), price: '2.50', previousPrice: '2.40' },
     { id: 2, name: 'Gas Station 2', address: 'Address 2', logo: require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png'), price: '2.60', previousPrice: '2.65' },
@@ -13,7 +13,6 @@ export default function TabTwoScreen() {
     { id: 5, name: 'Gas Station 2', address: 'Address 2', logo: require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png'), price: '2.60', previousPrice: '2.65' },
     { id: 6, name: 'Gas Station 2', address: 'Address 2', logo: require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png'), price: '2.60', previousPrice: '2.65' },
 
-    // Add more gas stations as needed
   ];
 
   const colorScheme = useColorScheme();
