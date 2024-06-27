@@ -1,232 +1,203 @@
 import React, { useState, useEffect } from 'react';
-import { Appearance, StyleSheet, View, Image, Text, Modal, TouchableOpacity, FlatList, TextInput, Linking } from 'react-native';
+import { Appearance, StyleSheet, View, Image, Text, Modal, TouchableOpacity, FlatList, TextInput, Linking, ScrollView } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 interface Location {
   latitude: number;
   longitude: number;
 }
 
-interface GasStations {
-  [key: string]: Location[];
-}
-
-const municipalities = [
-  { id: '1', name: 'Municipality 1' },
-  { id: '2', name: 'Municipality 2' },
-  { id: '3', name: 'Municipality 3' },
-  // Add more municipalities as needed
-];
-
-const gasStations: GasStations = {
-  '1': [
-    { latitude: 43.961235763484915, longitude: 18.05658163617972 },
-    { latitude: 43.97042427861928, longitude: 18.053852547010756 },
-  ],
-  '2': [
-    { latitude: 43.97273319661385, longitude: 18.05162396098856 },
-    { latitude: 43.97560604005778, longitude: 18.05007164364737 },
-  ],
-  '3': [
-    { latitude: 43.97522980892014, longitude: 18.049259588155618 },
-  ],
-};
-
-// Example data for gas station details
-const gasStationDetails = {
-  id: 1095,
-  fullName: "Krajina Petrol - Krajina Petrol-P.J.  Banja Luka 1",
-  gasStationCompanyImageUrl: "https://via.placeholder.com/100",
-  fullAddress: "Knjaza Miloša 14, Banja Luka",
-  webAddress: "https://krajinapetrol.com/",
-  phoneNumber: "051/329-960",
-  latitude: 44.793925002,
-  longitude: 17.207018884,
-  openDaysString: "PON - NED",
-  openHours: 6,
-  closeHours: 24,
-  priceDetails: [
-    {
-      currentPrice: 1.62,
-      oilDerivateType: 4,
-      oilDerivateName: "EURODIZEL BAS EN590 KONZULATI SR _ HR",
-      history: []
-    },
-    {
-      currentPrice: 2.61,
-      oilDerivateType: 2,
-      oilDerivateName: "PREMIUM 95 BAS EN 228",
-      history: [
-        {
-          date: "2024-04-19T08:23:25.2066667",
-          price: 2.69,
-          ascending: true
-        },
-        {
-          date: "2024-02-21T02:50:08.01",
-          price: 2.61,
-          ascending: true
-        },
-        {
-          date: "2024-02-13T02:50:06.24",
-          price: 2.53,
-          ascending: true
-        }
-      ]
-    },
-  ],
-  minimumPrices: [
-    {
-      currentPrice: 1.62,
-      oilDerivateType: 4,
-      oilDerivateName: "EURODIZEL BAS EN590 KONZULATI SR _ HR"
-    },
-    {
-      currentPrice: 2.61,
-      oilDerivateType: 2,
-      oilDerivateName: "PREMIUM 95 BAS EN 228"
-    },
-    {
-      currentPrice: 2.51,
-      oilDerivateType: 2048,
-      oilDerivateName: "DIZEL GORIVO BAS EN 590"
-    },
-    {
-      currentPrice: 1.15,
-      oilDerivateType: 2041,
-      oilDerivateName: "TECNI NAFTNI GAS BAS EN 589"
-    },
-    {
-      currentPrice: 2.51,
-      oilDerivateType: 4,
-      oilDerivateName: "DIZEL GORIVO BAS EN 590"
-    },
-    {
-      currentPrice: 2.61,
-      oilDerivateType: 2,
-      oilDerivateName: "PREMIUM 95 BAS EN 228"
-    }
-  ]
-};
-
-interface OilType {
+interface GasStation {
   id: number;
-  name: string;
-  shortName: string;
+  fullName: string;
+  gasStationCompanyImageUrl: string;
+  fullAddress: string;
+  webAddress: string;
+  phoneNumber: string;
+  latitude: number;
+  longitude: number;
+  openDaysString: string;
+  openHours: number;
+  closeHours: number;
+  priceDetails: {
+    currentPrice: number;
+    oilDerivateType: number;
+    oilDerivateName: string;
+    history: {
+      date: string;
+      price: number;
+      ascending: boolean;
+    }[];
+  }[];
+  minimumPrices: {
+    currentPrice: number;
+    oilDerivateType: number;
+    oilDerivateName: string;
+  }[];
 }
 
-const oilTypes: OilType[] = [
-  {
-    id: 2,
-    name: "Premium bezolovni benzin 95",
-    shortName: "BMB 95"
-  },
-  {
-    id: 3,
-    name: "SUPER PLUS bezolovni benzin 98 BAS EN 228",
-    shortName: "SUPER 98"
-  },
-  {
-    id: 4,
-    name: "Dizel EURO 5",
-    shortName: "EUD5"
-  },
-  {
-    id: 1002,
-    name: "Dizel Euro 5 Aditivirani",
-    shortName: "EUD5+"
-  },
-  {
-    id: 2041,
-    name: "Tečni naftni gas",
-    shortName: "TNG"
-  },
-  {
-    id: 2042,
-    name: "AD BLUE",
-    shortName: "ADB"
-  },
-  {
-    id: 2043,
-    name: "Lož ulje",
-    shortName: "LU"
-  },
-  {
-    id: 2044,
-    name: " SUPER  bezolovni benzin 100 BAS EN 228",
-    shortName: "SUPER 100"
-  },
-  {
-    id: 2045,
-    name: "Dizel EURO 6",
-    shortName: "EUD6"
-  },
-  {
-    id: 2046,
-    name: "Dizel EURO 4",
-    shortName: "EUD4"
-  },
-  {
-    id: 2047,
-    name: "Premium bezolovni benzin 95 Aditivirani",
-    shortName: "BMB95+"
-  },
-  {
-    id: 2048,
-    name: "Konzularni Dizel",
-    shortName: "DKON"
-  }
-];
+interface Municipality {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
 
 const getOilTypeShortName = (id: number): string => {
   const oilType = oilTypes.find(type => type.id === id);
   return oilType ? oilType.shortName : '';
 };
 
+const oilTypes = [
+  { id: 2, name: "Premium bezolovni benzin 95", shortName: "BMB 95" },
+  { id: 3, name: "SUPER PLUS bezolovni benzin 98 BAS EN 228", shortName: "SUPER 98" },
+  { id: 4, name: "Dizel EURO 5", shortName: "EUD5" },
+  { id: 1002, name: "Dizel Euro 5 Aditivirani", shortName: "EUD5+" },
+  { id: 2041, name: "Tečni naftni gas", shortName: "TNG" },
+  { id: 2042, name: "AD BLUE", shortName: "ADB" },
+  { id: 2043, name: "Lož ulje", shortName: "LU" },
+  { id: 2044, name: "SUPER bezolovni benzin 100 BAS EN 228", shortName: "SUPER 100" },
+  { id: 2045, name: "Dizel EURO 6", shortName: "EUD6" },
+  { id: 2046, name: "Dizel EURO 4", shortName: "EUD4" },
+  { id: 2047, name: "Premium bezolovni benzin 95 Aditivirani", shortName: "BMB95+" },
+  { id: 2048, name: "Konzularni Dizel", shortName: "DKON" }
+];
+
+const municipalitiesData: Municipality[] = [
+  { id: '1', name: 'Banja Luka', latitude: 44.7725, longitude: 17.191 },
+  { id: '3', name: 'Prijedor', latitude: 44.9796, longitude: 16.7039 },
+  { id: '4', name: 'Bijeljina', latitude: 44.7566, longitude: 19.2144 },
+  { id: '5', name: 'Pale', latitude: 43.8144, longitude: 18.5692 },
+  { id: '2135', name: 'Kozarska Dubica', latitude: 45.1768, longitude: 16.8092 },
+  { id: '2136', name: 'Mrkonjić Grad', latitude: 44.4153, longitude: 17.0853 },
+  { id: '2137', name: 'Gradiška', latitude: 45.1416, longitude: 17.2507 },
+  { id: '2138', name: 'Čelinac', latitude: 44.7242, longitude: 17.3242 },
+  { id: '2139', name: 'Doboj', latitude: 44.7338, longitude: 18.0845 },
+  { id: '2140', name: 'Srbac', latitude: 45.0975, longitude: 17.5256 },
+  { id: '2142', name: 'Derventa', latitude: 44.9772, longitude: 17.9106 },
+  { id: '2143', name: 'Istočno Sarajevo', latitude: 43.8144, longitude: 18.5692 },
+  { id: '2144', name: 'Šipovo', latitude: 44.2825, longitude: 17.0866 },
+  { id: '2147', name: 'Istočni Stari Grad', latitude: 43.8029, longitude: 18.3838 },
+  { id: '2148', name: 'Trnovo', latitude: 43.6644, longitude: 18.4500 },
+  { id: '2149', name: 'Kalinovik', latitude: 43.5583, longitude: 18.4469 },
+  { id: '2150', name: 'Sokolac', latitude: 43.9397, longitude: 18.8000 },
+  { id: '2151', name: 'Han Pijesak', latitude: 44.0833, longitude: 19.0000 },
+  { id: '2152', name: 'Višegrad', latitude: 43.7822, longitude: 19.2856 },
+  { id: '2153', name: 'Trebinje', latitude: 42.7111, longitude: 18.3433 },
+  { id: '2154', name: 'Bileća', latitude: 42.8719, longitude: 18.4297 },
+  { id: '2155', name: 'Gacko', latitude: 43.1669, longitude: 18.5378 },
+  { id: '2156', name: 'Nevesinje', latitude: 43.2572, longitude: 18.1136 },
+  { id: '2157', name: 'Berkovići', latitude: 43.0997, longitude: 18.2467 },
+  { id: '2158', name: 'Ljubinje', latitude: 42.9514, longitude: 18.0883 },
+  { id: '2159', name: 'Foča', latitude: 43.5058, longitude: 18.7733 },
+  { id: '2160', name: 'Novo Goražde', latitude: 43.6667, longitude: 18.9769 },
+  { id: '2161', name: 'Rogatica', latitude: 43.7986, longitude: 19.0014 },
+  { id: '2162', name: 'Rudo', latitude: 43.6192, longitude: 19.3669 },
+  { id: '2163', name: 'Čajniče', latitude: 43.5569, longitude: 19.0725 },
+  { id: '2164', name: 'Ugljevik', latitude: 44.6936, longitude: 19.0089 },
+  { id: '2165', name: 'Lopare', latitude: 44.6369, longitude: 18.8519 },
+  { id: '2166', name: 'Osmaci', latitude: 44.3878, longitude: 18.9431 },
+  { id: '2167', name: 'Bratunac', latitude: 44.1850, longitude: 19.3336 },
+  { id: '2168', name: 'Srebrenica', latitude: 44.1069, longitude: 19.2961 },
+  { id: '2169', name: 'Vlasenica', latitude: 44.1833, longitude: 18.9411 },
+  { id: '2170', name: 'Milići', latitude: 44.1692, longitude: 19.0883 },
+  { id: '2171', name: 'Šekovići', latitude: 44.3111, longitude: 18.8572 },
+  { id: '2172', name: 'Zvornik', latitude: 44.3850, longitude: 19.1019 },
+  { id: '2173', name: 'Prnjavor', latitude: 44.8667, longitude: 17.6622 },
+  { id: '2174', name: 'Šamac', latitude: 45.0725, longitude: 18.4633 },
+  { id: '2175', name: 'Pelagićevo', latitude: 44.8900, longitude: 18.6064 },
+  { id: '2176', name: 'Donji Žabar', latitude: 44.9297, longitude: 18.6356 },
+  { id: '2177', name: 'Stanari', latitude: 44.7233, longitude: 18.1156 },
+  { id: '2178', name: 'Teslić', latitude: 44.6061, longitude: 17.8592 },
+  { id: '2179', name: 'Brod', latitude: 45.1358, longitude: 17.9939 },
+  { id: '2180', name: 'Vukosavlje', latitude: 45.0525, longitude: 18.2997 },
+  { id: '2181', name: 'Modriča', latitude: 44.9592, longitude: 18.2464 },
+  { id: '2182', name: 'Petrovo', latitude: 44.6097, longitude: 18.2878 },
+  { id: '2183', name: 'Kotor Varoš', latitude: 44.6228, longitude: 17.3717 },
+  { id: '2184', name: 'Kneževo', latitude: 44.4939, longitude: 17.3775 },
+  { id: '2185', name: 'Laktaši', latitude: 44.9083, longitude: 17.3000 },
+  { id: '2186', name: 'Jezero', latitude: 44.3400, longitude: 17.1911 },
+  { id: '2187', name: 'Novo selo (I. Kupres)', latitude: 44.1689, longitude: 17.2486 },
+  { id: '2188', name: 'Gornji Ribnik (Ribnik)', latitude: 44.4850, longitude: 16.8058 },
+  { id: '2189', name: 'Drinić (Petrovac)', latitude: 44.5233, longitude: 16.6839 },
+  { id: '2190', name: 'Potoci (I. Drvar)', latitude: 44.3717, longitude: 16.9378 },
+  { id: '2191', name: 'Novi Grad', latitude: 45.0453, longitude: 16.3772 },
+  { id: '2192', name: 'Kostajnica', latitude: 45.2272, longitude: 16.5383 },
+  { id: '2193', name: 'Donji Dubovik (Krupa na Uni)', latitude: 44.8881, longitude: 16.2881 },
+  { id: '2194', name: 'Oštra Luka', latitude: 44.8717, longitude: 16.6447 }
+];
+
 export default function TabOneScreen() {
   const initialColorScheme = Appearance.getColorScheme();
   const [colorScheme, setColorScheme] = useState(initialColorScheme);
   const [modalVisible, setModalVisible] = useState(false);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [selectedMunicipality, setSelectedMunicipality] = useState<string | null>(null);
+  const [selectedMunicipality, setSelectedMunicipality] = useState<Municipality | null>(null);
   const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
   const [search, setSearch] = useState('');
-  const [filteredMunicipalities, setFilteredMunicipalities] = useState(municipalities);
+  const [filteredMunicipalities, setFilteredMunicipalities] = useState<Municipality[]>(municipalitiesData);
+  const [loading, setLoading] = useState(true);
+  const [gasStations, setGasStations] = useState<GasStation[]>([]);
+  const [selectedGasStation, setSelectedGasStation] = useState<GasStation | null>(null);
+
 
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
       setColorScheme(colorScheme);
     });
 
+    const fetchData = async () => {
+      try {
+        const storedMunicipality = await AsyncStorage.getItem('selectedMunicipality');
+        if (storedMunicipality) {
+          const parsedMunicipality = JSON.parse(storedMunicipality);
+          const municipality = municipalitiesData.find(m => m.id === parsedMunicipality.id);
+          if (municipality) {
+            setSelectedMunicipality(municipality);
+            await fetchGasStations(municipality);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+
     return () => {
       subscription.remove();
     };
   }, []);
 
+  const fetchGasStations = async (municipality: Municipality) => {
+    try {
+      const gasStationsResponse = await fetch(`https://bps-mtt.vladars.rs:5101/api/gasStationBusinessUnits/city/${municipality.id}/1`);
+      const gasStationsData = await gasStationsResponse.json();
+      setSelectedLocations(gasStationsData.map((station: GasStation) => ({ latitude: station.latitude, longitude: station.longitude })));
+      setGasStations(gasStationsData);
+      await AsyncStorage.setItem('selectedMunicipality', JSON.stringify(municipality));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (selectedMunicipality) {
-      setSelectedLocations(gasStations[selectedMunicipality]);
+      fetchGasStations(selectedMunicipality);
     }
   }, [selectedMunicipality]);
 
   useEffect(() => {
     setFilteredMunicipalities(
-      municipalities.filter((municipality) =>
+      municipalitiesData.filter((municipality) =>
         municipality.name.toLowerCase().includes(search.toLowerCase())
       )
     );
   }, [search]);
-
-  const kiseljakCoordinates = {
-    latitude: 43.9426,
-    longitude: 18.0763,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  };
-
-  const customMarker = require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png');
-  const locationIcon = require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png');
 
   const openGoogleMaps = (address: string) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
@@ -239,40 +210,47 @@ export default function TabOneScreen() {
   };
 
   const renderGasStationDetails = () => (
+    <ScrollView>
     <View style={styles.detailsContainer}>
       <TouchableOpacity style={styles.closeIcon} onPress={() => setDetailsModalVisible(false)}>
         <MaterialIcons name="close" size={24} color="#FFF" />
       </TouchableOpacity>
-      <View style={styles.detailsHeader}>
-        <Image source={{ uri: gasStationDetails.gasStationCompanyImageUrl }} style={styles.detailsImage} />
-        <View style={styles.detailsHeaderText}>
-          <Text style={styles.detailsTitle}>{gasStationDetails.fullName}</Text>
-          <Text style={styles.detailsAddress}>{gasStationDetails.fullAddress}</Text>
-        </View>
-      </View>
-      <View style={styles.detailsIcons}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => callPhoneNumber(gasStationDetails.phoneNumber)}>
-          <MaterialIcons name="phone" size={28} color="#4CAF50" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={() => openGoogleMaps(gasStationDetails.fullAddress)}>
-          <MaterialIcons name="place" size={28} color="#E91E63" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.workingHoursContainer}>
-        <FontAwesome name="clock-o" size={24} color="#FFC107" />
-        <Text style={styles.detailsText}>{gasStationDetails.openDaysString} {gasStationDetails.openHours} - {gasStationDetails.closeHours}</Text>
-      </View>
-      <View style={styles.priceDetails}>
-        <Text style={styles.priceDetailsTitle}>Price Details:</Text>
-        {gasStationDetails.priceDetails.map((priceDetail, index) => (
-          <View key={index} style={styles.priceDetail}>
-            <FontAwesome name="tint" size={24} color="#2196F3" />
-            <Text style={styles.oilTypeText}>{getOilTypeShortName(priceDetail.oilDerivateType)}</Text>
-            <Text style={styles.priceText}>{priceDetail.currentPrice} KM</Text>
+      {selectedGasStation && (
+        <>
+          <View style={styles.detailsHeader}>
+            <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/assets/images/benz.jpg')} style={styles.detailsImage} />
+            <View style={styles.detailsHeaderText}>
+              <Text style={styles.detailsTitle}>{selectedGasStation.fullName}</Text>
+              <Text style={styles.detailsAddress}>{selectedGasStation.fullAddress}</Text>
+            </View>
           </View>
-        ))}
-      </View>
+          <View style={styles.detailsIcons}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => callPhoneNumber(selectedGasStation.phoneNumber)}>
+              <MaterialIcons name="phone" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => openGoogleMaps(selectedGasStation.fullAddress)}>
+              <MaterialIcons name="place" size={28} color="#E91E63" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.workingHoursContainer}>
+            <FontAwesome name="clock-o" size={24} color="#FFC107" />
+            <Text style={styles.detailsText}>{selectedGasStation.openDaysString} | {selectedGasStation.openHours} - {selectedGasStation.closeHours}</Text>
+            
+          </View>
+          <View style={styles.priceDetails}>
+            <Text style={styles.priceDetailsTitle}>Price Details:</Text>
+            {selectedGasStation.priceDetails.map((priceDetail, index) => (
+              <View key={index} style={styles.priceDetail}>
+                <FontAwesome name="tint" size={24} color="#2196F3" />
+                <Text style={styles.oilTypeText}>{getOilTypeShortName(priceDetail.oilDerivateType)}</Text>
+                <Text style={styles.priceText}>{priceDetail.currentPrice} KM</Text>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
     </View>
+    </ScrollView>
   );
 
   const renderGasStationDetailsModal = () => (
@@ -290,11 +268,76 @@ export default function TabOneScreen() {
     </Modal>
   );
 
+  if (loading) {
+    return <View style={styles.loadingContainer}><Text>Loading...</Text></View>;
+  }
+
+  if (!selectedMunicipality) {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={[styles.overlay, { backgroundColor: colorScheme === 'dark' ? '#333333' : '#FBFCF8' }]}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={[styles.overlayText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>Choose your municipality</Text>
+          <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png')} style={styles.locationIcon} />
+        </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={[styles.modalView, { backgroundColor: colorScheme === 'dark' ? '#333333' : '#FBFCF8' }]}>
+              <Text style={[styles.modalText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>Select Municipality</Text>
+              <TextInput
+                style={styles.searchBar}
+                placeholder="Search"
+                placeholderTextColor={colorScheme === 'dark' ? '#888' : '#333'}
+                value={search}
+                onChangeText={setSearch}
+              />
+              <View style={styles.listContainer}>
+                <FlatList
+                  data={filteredMunicipalities}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[styles.municipalityButton, { borderColor: colorScheme === 'dark' ? '#555555' : '#ccc' }]}
+                      onPress={() => {
+                        setSelectedMunicipality(item);
+                        setModalVisible(false);
+                      }}
+                    >
+                      <Text style={[styles.municipalityText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>{item.name}</Text>
+                      {selectedMunicipality && selectedMunicipality === item.id && (
+                        <MaterialIcons name="check" size={24} color="white" />
+                      )}
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        initialRegion={kiseljakCoordinates}
+        region={{
+          latitude: selectedMunicipality.latitude,
+          longitude: selectedMunicipality.longitude,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        }}
         provider={PROVIDER_DEFAULT}
         showsUserLocation={true}
         showsMyLocationButton={true}
@@ -309,9 +352,12 @@ export default function TabOneScreen() {
           <Marker
             key={index}
             coordinate={location}
-            onPress={() => setDetailsModalVisible(true)}
+            onPress={() => {
+              setSelectedGasStation(gasStations[index]);
+              setDetailsModalVisible(true);
+            }}
           >
-            <Image source={customMarker} style={{ width: 52, height: 52 }} />
+            <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png')} style={{ width: 52, height: 52 }} />
           </Marker>
         ))}
       </MapView>
@@ -319,8 +365,10 @@ export default function TabOneScreen() {
         style={[styles.overlay, { backgroundColor: colorScheme === 'dark' ? '#333333' : '#FBFCF8' }]}
         onPress={() => setModalVisible(true)}
       >
-        <Text style={[styles.overlayText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>Kiseljak</Text>
-        <Image source={locationIcon} style={styles.locationIcon} />
+        <Text style={[styles.overlayText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>
+          {selectedMunicipality.name}
+        </Text>
+        <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/petrol-station_8996900.png')} style={styles.locationIcon} />
       </TouchableOpacity>
       <Modal
         animationType="slide"
@@ -346,12 +394,12 @@ export default function TabOneScreen() {
                   <TouchableOpacity
                     style={[styles.municipalityButton, { borderColor: colorScheme === 'dark' ? '#555555' : '#ccc' }]}
                     onPress={() => {
-                      setSelectedMunicipality(item.id);
+                      setSelectedMunicipality(item);
                       setModalVisible(false);
                     }}
                   >
                     <Text style={[styles.municipalityText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>{item.name}</Text>
-                    {selectedMunicipality === item.id && (
+                    {selectedMunicipality && selectedMunicipality.id === item.id && (
                       <MaterialIcons name="check" size={24} color="white" />
                     )}
                   </TouchableOpacity>
@@ -747,7 +795,12 @@ const styles = StyleSheet.create({
   },
   closeIcon: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-  },
+    top: -5,
+    right: -5,
+ },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
