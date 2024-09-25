@@ -213,15 +213,15 @@ export default function TabOneScreen() {
     <ScrollView>
     <View style={styles.detailsContainer}>
       <TouchableOpacity style={styles.closeIcon} onPress={() => setDetailsModalVisible(false)}>
-        <MaterialIcons name="close" size={24} color="#FFF" />
+        <MaterialIcons name="close" size={24} color={colorScheme === 'dark' ? '#FFF' : '#000'}/>
       </TouchableOpacity>
       {selectedGasStation && (
         <>
           <View style={styles.detailsHeader}>
             <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/assets/images/benz.jpg')} style={styles.detailsImage} />
-            <View style={styles.detailsHeaderText}>
-              <Text style={styles.detailsTitle}>{selectedGasStation.fullName}</Text>
-              <Text style={styles.detailsAddress}>{selectedGasStation.fullAddress}</Text>
+            <View style={[styles.detailsHeaderText]}>
+              <Text style={[styles.detailsTitle,{ color: colorScheme === 'dark' ? 'white' : '#000' }]}>{selectedGasStation.fullName}</Text>
+              <Text style={[styles.detailsAddress,{ color: colorScheme === 'dark' ? '#AAA' : '#808080' }]}>{selectedGasStation.fullAddress}</Text>
             </View>
           </View>
           <View style={styles.detailsIcons}>
@@ -232,7 +232,7 @@ export default function TabOneScreen() {
               <MaterialIcons name="place" size={28} color="#E91E63" />
             </TouchableOpacity>
           </View>
-          <View style={styles.workingHoursContainer}>
+          <View style={[styles.workingHoursContainer,{ backgroundColor: colorScheme === 'dark' ? '#444' : '#41424c' }]}>
             <FontAwesome name="clock-o" size={24} color="#FFC107" />
             <Text style={styles.detailsText}>{selectedGasStation.openDaysString} | {selectedGasStation.openHours} - {selectedGasStation.closeHours}</Text>
             
@@ -240,7 +240,7 @@ export default function TabOneScreen() {
           <View style={styles.priceDetails}>
             <Text style={styles.priceDetailsTitle}>Price Details:</Text>
             {selectedGasStation.priceDetails.map((priceDetail, index) => (
-              <View key={index} style={styles.priceDetail}>
+              <View key={index} style={[styles.priceDetail,{ backgroundColor: colorScheme === 'dark' ? '#444' : '#41424c' }]}>
                 <FontAwesome name="tint" size={24} color="#2196F3" />
                 <Text style={styles.oilTypeText}>{getOilTypeShortName(priceDetail.oilDerivateType)}</Text>
                 <Text style={styles.priceText}>{priceDetail.currentPrice} KM</Text>
@@ -292,7 +292,7 @@ export default function TabOneScreen() {
             <View style={[styles.modalView, { backgroundColor: colorScheme === 'dark' ? '#333333' : '#FBFCF8' }]}>
               <Text style={[styles.modalText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>Select Municipality</Text>
               <TextInput
-                style={styles.searchBar}
+                style={[styles.searchBar, { color: colorScheme === 'dark' ? 'white' : '#333' }]}
                 placeholder="Search"
                 placeholderTextColor={colorScheme === 'dark' ? '#888' : '#333'}
                 value={search}
@@ -380,7 +380,7 @@ export default function TabOneScreen() {
           <View style={[styles.modalView, { backgroundColor: colorScheme === 'dark' ? '#333333' : '#FBFCF8' }]}>
             <Text style={[styles.modalText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>Select Municipality</Text>
             <TextInput
-              style={styles.searchBar}
+              style={[styles.searchBar,{ color: colorScheme === 'dark' ? 'white' : 'black'  }]}
               placeholder="Search"
               placeholderTextColor={colorScheme === 'dark' ? '#888' : '#333'}
               value={search}
@@ -398,7 +398,7 @@ export default function TabOneScreen() {
                       setModalVisible(false);
                     }}
                   >
-                    <Text style={[styles.municipalityText, { color: colorScheme === 'dark' ? 'white' : '#808080' }]}>{item.name}</Text>
+                    <Text style={[styles.municipalityText, { color: colorScheme === 'dark' ? 'white' : '#fff' }]}>{item.name}</Text>
                     {selectedMunicipality && selectedMunicipality.id === item.id && (
                       <MaterialIcons name="check" size={24} color="white" />
                     )}
@@ -609,6 +609,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Avenir-Book',
     textAlign: 'center',
+    fontWeight: 'bold',
   },
   locationIcon: {
     width: 32,
@@ -622,7 +623,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     width: '90%',
-    height: '80%', // Make the modal taller
+    height: '75%', // Make the modal taller
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 20,
@@ -637,6 +638,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontSize: 20,
+    fontWeight:'bold'
   },
   searchBar: {
     width: '100%',
@@ -646,7 +648,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     marginBottom: 15,
-    color: 'white',
     fontSize: 16,
   },
   listContainer: {
@@ -663,7 +664,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     width: '100%',
-    backgroundColor: '#A9A9A9',
+    backgroundColor: '#ffa726',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -672,7 +673,8 @@ const styles = StyleSheet.create({
   },
   municipalityText: {
     fontSize: 18,
-    color: 'white',
+    color: '#fff',
+    fontWeight: 'bold',
   },
   checkmark: {
     fontSize: 18,
@@ -680,7 +682,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     marginTop: 20,
-    backgroundColor: '#A9A9A9',
+    backgroundColor: '#ffa726',
     padding: 15,
     borderRadius: 10,
     width: '100%',
@@ -690,6 +692,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
     textAlign: 'center',
+    fontWeight: 'bold',
+
   },
   detailsContainer: {
     width: '100%',
@@ -708,15 +712,14 @@ const styles = StyleSheet.create({
   },
   detailsHeaderText: {
     flex: 1,
+    
   },
   detailsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFF',
   },
   detailsAddress: {
     fontSize: 16,
-    color: '#AAA',
   },
   detailsIcons: {
     flexDirection: 'row',
@@ -771,7 +774,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    backgroundColor: '#444',
     padding: 10,
     borderRadius: 10,
     width: '100%',

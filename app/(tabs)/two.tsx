@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, useColorScheme, ScrollView, TouchableOpacity, FlatList, Modal } from 'react-native';
+import { StyleSheet, View, Text, Image, useColorScheme, ScrollView, TouchableOpacity, FlatList,Linking, Modal } from 'react-native';
 import { FontAwesome5, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -125,12 +125,14 @@ export default function TabTwoScreen() {
     return oilType ? oilType.shortName : '';
   };
 
-  const callPhoneNumber = (phoneNumber: string) => {
-    // Implement the function to call the phone number
+  const openGoogleMaps = (address: string) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    Linking.openURL(url);
   };
 
-  const openGoogleMaps = (address: string) => {
-    // Implement the function to open Google Maps
+  const callPhoneNumber = (phoneNumber: string) => {
+    const url = `tel:${phoneNumber}`;
+    Linking.openURL(url);
   };
 
   return (
@@ -143,7 +145,7 @@ export default function TabTwoScreen() {
           <TouchableOpacity 
             style={[
               styles.oilTypeButton, 
-              { backgroundColor: selectedOilType === item.id ? '#4CAF50' : colorScheme === 'dark' ? '#333' : '#fff' }
+              { backgroundColor: selectedOilType === item.id ? '#ffa726' : colorScheme === 'dark' ? '#333' : '#fff' }
             ]}
             onPress={() => handleOilTypeSelection(item.id)}
           >
@@ -184,12 +186,12 @@ export default function TabTwoScreen() {
                       <View style={styles.arrowContainer}>
                         {detail.currentPrice > detail.history[0].price ? (
                           <>
-                            <Text style={styles.changeText}>+{(detail.currentPrice - detail.history[0].price).toFixed(2)}</Text>
+                            <Text style={[styles.changeText,{ color: colorScheme === 'dark' ? 'green' : 'green'}]}>+{(detail.currentPrice - detail.history[0].price).toFixed(2)}</Text>
                             <FontAwesome5 name="caret-up" size={20} color="green" style={{ marginLeft: 5 }} />
                           </>
                         ) : (
                           <>
-                            <Text style={styles.changeText}>{(detail.currentPrice - detail.history[0].price).toFixed(2)}</Text>
+                            <Text style={[styles.changeText,{ color: colorScheme === 'dark' ? 'red' : 'red'}]}>{(detail.currentPrice - detail.history[0].price).toFixed(2)}</Text>
                             <FontAwesome5 name="caret-down" size={20} color="red" style={{ marginLeft: 5 }} />
                           </>
                         )}
@@ -210,47 +212,48 @@ export default function TabTwoScreen() {
         onRequestClose={() => setDetailsModalVisible(false)}
       >
         <View style={styles.detailsModalContainer}>
-          <View style={styles.detailsModalView}>
-            <ScrollView>
-              <View style={styles.detailsContainer}>
-                <TouchableOpacity style={styles.closeIcon} onPress={() => setDetailsModalVisible(false)}>
-                  <MaterialIcons name="close" size={24} color="#FFF" />
-                </TouchableOpacity>
-                {selectedGasStation && (
-                  <>
-                    <View style={styles.detailsHeader}>
-                      <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/assets/images/benz.jpg')} style={styles.detailsImage} />
-                      <View style={styles.detailsHeaderText}>
-                        <Text style={styles.detailsTitle}>{selectedGasStation.fullName}</Text>
-                        <Text style={styles.detailsAddress}>{selectedGasStation.fullAddress}</Text>
-                      </View>
-                    </View>
-                    <View style={styles.detailsIcons}>
-                      <TouchableOpacity style={styles.iconButton} onPress={() => callPhoneNumber(selectedGasStation.phoneNumber)}>
-                        <MaterialIcons name="phone" size={28} color="#4CAF50" />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.iconButton} onPress={() => openGoogleMaps(selectedGasStation.fullAddress)}>
-                        <MaterialIcons name="place" size={28} color="#E91E63" />
-                      </TouchableOpacity>
-                    </View>
-                    <View style={styles.workingHoursContainer}>
-                      <FontAwesome name="clock-o" size={24} color="#FFC107" />
-                      <Text style={styles.detailsText}>{selectedGasStation.openDaysString} | {selectedGasStation.openHours} - {selectedGasStation.closeHours}</Text>
-                    </View>
-                    <View style={styles.priceDetails}>
-                      <Text style={styles.priceDetailsTitle}>Price Details:</Text>
-                      {selectedGasStation.priceDetails.map((priceDetail, index) => (
-                        <View key={index} style={styles.priceDetail}>
-                          <FontAwesome name="tint" size={24} color="#2196F3" />
-                          <Text style={styles.oilTypeText}>{getOilTypeShortName(priceDetail.oilDerivateType)}</Text>
-                          <Text style={styles.priceText}>{priceDetail.currentPrice} KM</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </>
-                )}
+          <View style={[styles.detailsModalView,{ backgroundColor: colorScheme === 'dark' ? '#333333' : '#FBFCF8' }]}>
+          <ScrollView>
+    <View style={styles.detailsContainer}>
+      <TouchableOpacity style={styles.closeIcon} onPress={() => setDetailsModalVisible(false)}>
+        <MaterialIcons name="close" size={24} color={colorScheme === 'dark' ? '#FFF' : '#000'}/>
+      </TouchableOpacity>
+      {selectedGasStation && (
+        <>
+          <View style={styles.detailsHeader}>
+            <Image source={require('/Applications/XAMPP/xamppfiles/htdocs/oilprices/assets/images/benz.jpg')} style={styles.detailsImage} />
+            <View style={[styles.detailsHeaderText]}>
+              <Text style={[styles.detailsTitle,{ color: colorScheme === 'dark' ? 'white' : '#000' }]}>{selectedGasStation.fullName}</Text>
+              <Text style={[styles.detailsAddress,{ color: colorScheme === 'dark' ? '#AAA' : '#808080' }]}>{selectedGasStation.fullAddress}</Text>
+            </View>
+          </View>
+          <View style={styles.detailsIcons}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => callPhoneNumber(selectedGasStation.phoneNumber)}>
+              <MaterialIcons name="phone" size={28} color="#4CAF50" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => openGoogleMaps(selectedGasStation.fullAddress)}>
+              <MaterialIcons name="place" size={28} color="#E91E63" />
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.workingHoursContainer,{ backgroundColor: colorScheme === 'dark' ? '#444' : '#41424c' }]}>
+            <FontAwesome name="clock-o" size={24} color="#FFC107" />
+            <Text style={styles.detailsText}>{selectedGasStation.openDaysString} | {selectedGasStation.openHours} - {selectedGasStation.closeHours}</Text>
+            
+          </View>
+          <View style={styles.priceDetails}>
+            <Text style={styles.priceDetailsTitle}>Price Details:</Text>
+            {selectedGasStation.priceDetails.map((priceDetail, index) => (
+              <View key={index} style={[styles.priceDetail,{ backgroundColor: colorScheme === 'dark' ? '#444' : '#41424c' }]}>
+                <FontAwesome name="tint" size={24} color="#2196F3" />
+                <Text style={styles.oilTypeText}>{getOilTypeShortName(priceDetail.oilDerivateType)}</Text>
+                <Text style={styles.priceText}>{priceDetail.currentPrice} KM</Text>
               </View>
-            </ScrollView>
+            ))}
+          </View>
+        </>
+      )}
+    </View>
+    </ScrollView>
           </View>
         </View>
       </Modal>
@@ -284,7 +287,7 @@ const styles = StyleSheet.create({
   },
   sortButton: {
     padding: 10,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#ffa726',
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 10,
@@ -342,7 +345,6 @@ const styles = StyleSheet.create({
   changeText: {
     fontSize: 16,
     marginRight: 5,
-    color: 'white',
   },
   modalContainer: {
     flex: 1,
@@ -514,7 +516,6 @@ const styles = StyleSheet.create({
   detailsModalView: {
     width: '90%',
     height: '70%',
-    backgroundColor: '#222',
     borderRadius: 10,
     padding: 20,
     shadowColor: '#000',

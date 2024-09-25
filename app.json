@@ -16,9 +16,14 @@
       "**/*"
     ],
     "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan barcodes."
+      },
       "supportsTablet": true
     },
     "android": {
+      "permissions": ["android.permission.CAMERA","android.permission.INTERNET"],
+
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -31,6 +36,7 @@
     },
     "plugins": [
       "expo-router"
+           
     ],
     "experiments": {
       "typedRoutes": true

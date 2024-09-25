@@ -5,50 +5,35 @@ require '../vendor/autoload.php';
 Flight::route('GET /connection-check', function()  {
 
   $controller = new Sssd\Controller();
-  
+  $controller->checkConnection();
 }); 
 
 
+  Flight::route('POST /fetch_data_and_store', function(){
+    $controller = new Sssd\Controller();
+    $controller->fetchGasStationDataAndStore();
+  });
 
 
-Flight::route('GET /gas_station_oil_prices', function() {
- 
-  $controller = new Sssd\Controller();
-
-  $controller->getGasStationOilPrices();
-
-
+  Flight::route('GET /cities', function() {
+    $controller = new Sssd\Controller();
+    $controller->getCities();
 });
 
-Flight::route('GET /gas_station_oil_pricesid/@id', function($id) {
- 
-  $controller = new Sssd\Controller();
-
-  $controller->getGasStationByIdWithPrices($id);
-
-
+Flight::route('GET /oil_types', function() {
+    $controller = new Sssd\Controller();
+    $controller->getOilTypes();
 });
 
-
-Flight::route('GET /gas_stations_maunicipality/@id', function($id) {
- 
-  $controller = new Sssd\Controller();
-
-  $controller->getGasStationsByMunicipalityId($id);
-
-
+Flight::route('GET /oil_prices', function() {
+    $controller = new Sssd\Controller();
+    $controller->getOilPrices();
 });
 
-Flight::route('GET /gas_stations_oilinfo/@id', function($id) {
- 
-  $controller = new Sssd\Controller();
-
-  $controller->getOilPricesAndNameByStationId($id);
-
-
+Flight::route('GET /gas_station/@id', function($id) {
+    $controller = new Sssd\Controller();
+    $controller->getGasStationDetails($id);
 });
-
-
 
 
 
